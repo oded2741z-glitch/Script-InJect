@@ -764,7 +764,7 @@ class OllamaChatApp:
         """Open a file dialog and attach one or more files (images or text)."""
         import base64
         paths = filedialog.askopenfilenames(
-            title="צרף קבצים",
+            title="Attach files",
             filetypes=[
                 ("All supported", "*.png *.jpg *.jpeg *.gif *.bmp *.webp "
                                   "*.txt *.py *.js *.json *.md *.csv *.html "
@@ -791,7 +791,7 @@ class OllamaChatApp:
                     self._attachments.append(
                         {"name": name, "kind": "text", "text": text})
             except OSError as exc:
-                messagebox.showerror("שגיאה", f"לא ניתן לקרוא את {name}:\n{exc}")
+                messagebox.showerror("Error", f"Could not read {name}:\n{exc}")
         self._render_attachments()
 
     def _render_attachments(self):
@@ -1220,11 +1220,11 @@ class OllamaChatApp:
         name = self._hist_groups[gi]["name"]
         n = len(self._hist_groups[gi]["items"])
         if keep:
-            msg = f"למחוק את הקבוצה '{name}'?\nהשיחות יישארו ברשימה."
+            msg = f"Delete the group '{name}'?\nThe conversations will remain in the list."
         else:
-            msg = (f"למחוק את הקבוצה '{name}' ואת {n} השיחות שבתוכה?\n"
-                   "פעולה זו אינה הפיכה.")
-        if not messagebox.askyesno("מחיקת קבוצה", msg):
+            msg = (f"Delete the group '{name}' and the {n} conversations inside it?\n"
+                   "This action cannot be undone.")
+        if not messagebox.askyesno("Delete group", msg):
             return
         if not keep:
             for idx in reversed(sorted(self._hist_groups[gi]["items"])):
@@ -1880,7 +1880,7 @@ class OllamaChatApp:
         if not _TTS_AVAILABLE:
             note("pyttsx3 is not installed. Run:  pip install pyttsx3")
         else:
-            note("הוסף כפתור 🔊 לכל תשובה של המודל.")
+            note("Adds a 🔊 button to every model response.")
             _au_tts = tk.BooleanVar(value=self.tts_auto)
 
             def toggle_auto():
@@ -1888,7 +1888,7 @@ class OllamaChatApp:
                 self._persist()
 
             tk.Checkbutton(
-                tab, text="השמע תשובות אוטומטית",
+                tab, text="Speak responses automatically",
                 variable=_au_tts, command=toggle_auto,
                 bg=self.BG, fg=self.TEXT_FG, activebackground=self.BG,
                 selectcolor=self.PANEL, font=("Segoe UI", 10), anchor="w",
@@ -1896,7 +1896,7 @@ class OllamaChatApp:
 
             row = tk.Frame(tab, bg=self.BG)
             row.pack(anchor="w", padx=12, pady=(6, 2))
-            tk.Label(row, text="מהירות דיבור:", bg=self.BG,
+            tk.Label(row, text="Speech rate:", bg=self.BG,
                      fg=self.TEXT_FG, font=("Segoe UI", 9)).pack(side=tk.LEFT)
             _rate = tk.IntVar(value=self.tts_rate)
             rate_spin = tk.Spinbox(
@@ -1905,7 +1905,7 @@ class OllamaChatApp:
                 bg=self.INPUT_BG, fg=self.TEXT_FG,
             )
             rate_spin.pack(side=tk.LEFT, padx=6)
-            tk.Label(row, text="מילים לדקה", bg=self.BG,
+            tk.Label(row, text="words per minute", bg=self.BG,
                      fg=self.MUTED_FG, font=("Segoe UI", 9)).pack(side=tk.LEFT)
 
             def save_rate(*_):
@@ -1921,17 +1921,17 @@ class OllamaChatApp:
         # --- STT section ---
         tk.Frame(tab, bg=self.BORDER, height=1).pack(fill=tk.X, padx=12, pady=8)
         tk.Label(
-            tab, text="Speech-to-Text (STT) — כפתור 🎤", bg=self.BG,
+            tab, text="Speech-to-Text (STT) — 🎤 button", bg=self.BG,
             fg=self.TEXT_FG, font=("Segoe UI", 10, "bold"),
         ).pack(anchor="w", padx=12, pady=(0, 2))
 
         if not _STT_AVAILABLE:
-            note("speech_recognition ו-pyaudio אינם מותקנים. הרץ:\n"
+            note("speech_recognition and pyaudio are not installed. Run:\n"
                  "pip install SpeechRecognition pyaudio")
         else:
-            note("לחץ 🎤 בזמן הקלדה כדי להכתיב טקסט מהמיקרופון.")
+            note("Click 🎤 while typing to dictate text from the microphone.")
             STT_LANGS = [
-                ("עברית (he-IL)", "he-IL"),
+                ("Hebrew (he-IL)", "he-IL"),
                 ("English (en-US)", "en-US"),
                 ("Arabic (ar-SA)", "ar-SA"),
                 ("Français (fr-FR)", "fr-FR"),
@@ -1945,7 +1945,7 @@ class OllamaChatApp:
 
             row2 = tk.Frame(tab, bg=self.BG)
             row2.pack(anchor="w", padx=12, pady=(4, 2))
-            tk.Label(row2, text="שפת זיהוי:", bg=self.BG,
+            tk.Label(row2, text="Recognition language:", bg=self.BG,
                      fg=self.TEXT_FG, font=("Segoe UI", 9)).pack(side=tk.LEFT)
             lang_combo = ttk.Combobox(
                 row2, textvariable=_lang_var, values=lang_labels,
@@ -1987,10 +1987,10 @@ class OllamaChatApp:
         has_images = any(a["kind"] == "image" for a in self._attachments)
         if has_images and not self._model_supports_vision(model):
             if not messagebox.askyesno(
-                "המודל לא תומך בתמונות",
-                f"המודל '{model}' כנראה לא יודע לקרוא תמונות.\n"
-                "מומלץ לבחור מודל ראייה (gemma3, llava, llama3.2-vision).\n\n"
-                "לשלוח בכל זאת?",
+                "Model does not support images",
+                f"The model '{model}' probably cannot read images.\n"
+                "It is recommended to choose a vision model (gemma3, llava, llama3.2-vision).\n\n"
+                "Send anyway?",
             ):
                 return
 
@@ -2006,7 +2006,7 @@ class OllamaChatApp:
                 images.append(att["data"])
                 attach_summary.append(f"🖼 {att['name']}")
             else:
-                content += (f"\n\n--- קובץ מצורף: {att['name']} ---\n"
+                content += (f"\n\n--- attached file: {att['name']} ---\n"
                             f"{att['text']}")
                 attach_summary.append(f"📄 {att['name']}")
 
@@ -2106,13 +2106,13 @@ class OllamaChatApp:
                     self.root.lift()
                     self.root.focus_force()
                     holder["approved"] = messagebox.askyesno(
-                        "אישור כתיבה לקובץ",
-                        f"המודל רוצה לכתוב לקובץ:\n\n{full}\n\n"
-                        f"── תוכן ──\n{preview}",
+                        "Confirm file write",
+                        f"The model wants to write to a file:\n\n{full}\n\n"
+                        f"── content ──\n{preview}",
                         default=messagebox.NO,
                     )
                     if not holder["approved"]:
-                        self.set_status("כתיבה נדחתה על ידי המשתמש")
+                        self.set_status("Write rejected by user")
                     event.set()
                 elif kind == "agent_done":
                     self._finish_agent(payload)
@@ -2138,9 +2138,9 @@ class OllamaChatApp:
                     self.set_status("Ready")
                 elif kind == "stt_error":
                     self._set_mic_recording(False)
-                    self.set_status(f"שגיאת זיהוי: {payload}")
+                    self.set_status(f"Recognition error: {payload}")
                     if payload:
-                        messagebox.showwarning("שגיאת מיקרופון", payload)
+                        messagebox.showwarning("Microphone error", payload)
                 elif kind == "error":
                     self._append(f"\n[Error] {payload}\n", "body")
                     if self.streaming and self.workspace:
@@ -2422,7 +2422,7 @@ class OllamaChatApp:
         nb.add(tab, text="Workspace")
         tk.Label(
             tab,
-            text="תיקיית עבודה — המודל יוכל לקרוא ולכתוב קבצים בתיקייה זו.",
+            text="Working folder — the model will be able to read and write files in this folder.",
             bg=self.BG, fg=self.MUTED_FG, font=("Segoe UI", 9),
             wraplength=520, justify="left",
         ).pack(anchor="w", padx=12, pady=(12, 6))
@@ -2697,13 +2697,13 @@ class OllamaChatApp:
     def _start_stt(self):
         if not _STT_AVAILABLE:
             messagebox.showinfo(
-                "STT לא זמין",
-                "התקן את החבילות הנדרשות:\n\npip install SpeechRecognition pyaudio",
+                "STT not available",
+                "Install the required packages:\n\npip install SpeechRecognition pyaudio",
             )
             return
         if self.streaming or self._mic_recording:
             return
-        self.set_status("🎙 מקשיב… דבר עכשיו")
+        self.set_status("🎙 Listening… speak now")
         self._set_mic_recording(True)
 
         lang = self.stt_lang
@@ -2716,9 +2716,9 @@ class OllamaChatApp:
                 except OSError as exc:
                     self.ui_queue.put((
                         "stt_error",
-                        f"אין גישה למיקרופון: {exc}\n"
-                        "ודא ש-pyaudio מותקן (pip install pyaudio) "
-                        "ושמיקרופון מחובר."
+                        f"No access to microphone: {exc}\n"
+                        "Make sure pyaudio is installed (pip install pyaudio) "
+                        "and that a microphone is connected."
                     ))
                     return
                 with mic as source:
@@ -2727,9 +2727,9 @@ class OllamaChatApp:
                 text = r.recognize_google(audio, language=lang)
                 self.ui_queue.put(("stt_result", text))
             except _sr.WaitTimeoutError:
-                self.ui_queue.put(("stt_error", "לא זוהה קול — נסה שוב"))
+                self.ui_queue.put(("stt_error", "No speech detected — try again"))
             except _sr.UnknownValueError:
-                self.ui_queue.put(("stt_error", "לא ניתן להבין — דבר בבירור"))
+                self.ui_queue.put(("stt_error", "Could not understand — speak clearly"))
             except Exception as exc:  # noqa: BLE001
                 self.ui_queue.put(("stt_error", str(exc)))
 
